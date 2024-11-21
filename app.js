@@ -1,16 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const app =express()
+const app = express()
 const mongoose = require('mongoose')
 
-const initRoutes = require('./init/routes/init_router')
+const initRoutes = require('./init/router/init_router')
+const userRoutes = require('./auth/router/user_router')
 
 const errorController = require('./error/controller/error_controller');
 
 app.use(bodyParser.json())
 app.use('/init', initRoutes)
-
+app.use('/user', userRoutes)
 
 app.use(errorController.handle405);
 

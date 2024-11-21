@@ -11,9 +11,6 @@ exports.init = (req, res, next) => {
             }
         });
     } else {
-        User.find({}).then(users => {
-            console.log('All users:', users);
-        });
         User.findOne({ appKey: appKey, appSecret: appSecret })
             .then(user => {
                 if (!user) {

@@ -23,7 +23,7 @@ exports.login = (req, res, next) => {
             }
         });
     }
-    User.findOne({ email: req.body.email.toString() })
+    User.findOne({ email: req.body.email.toString().toLowerCase() })
         .then(user => {
             if (!user) {
                 return res.status(404).json({
@@ -154,7 +154,7 @@ exports.register = async (req, res, next) => {
                 message: "Invalid Email Format"
             }
         });
-    } else if (await User.findOne({ email: req.body.email.toString() })) {
+    } else if (await User.findOne({ email: req.body.email.toString().toLowerCase() })) {
         return res.status(409).json({
             header: {
                 errorCode: '409',

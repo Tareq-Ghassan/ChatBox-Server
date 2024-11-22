@@ -233,6 +233,10 @@ exports.register = async (req, res, next) => {
                     errorCode: '00000',
                     message: 'Success',
                     jwt: token
+                },
+                body: {
+                    name: user.name.toString(),
+                    email: user.email.toString()
                 }
             })
         })

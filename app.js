@@ -6,12 +6,14 @@ const mongoose = require('mongoose')
 
 const initRoutes = require('./init/router/init_router')
 const userRoutes = require('./auth/router/user_router')
+const storyRoutes = require('./stories/router/story_router')
 
 const errorController = require('./error/controller/error_controller');
 
 app.use(bodyParser.json())
 app.use('/init', initRoutes)
 app.use('/user', userRoutes)
+app.use('/story', storyRoutes)
 
 app.use(errorController.handle405);
 

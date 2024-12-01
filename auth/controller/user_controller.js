@@ -35,7 +35,6 @@ exports.login = (req, res, next) => {
             }
 
             if (verifyPassword(req.body.password.toString(), user.salt.toString(), user.password.toString())) {
-                console.log(user.salt.toString())
                 const token = generateToken(user);
                 return res.status(200).json({
                     header: {

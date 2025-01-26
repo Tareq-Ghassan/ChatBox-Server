@@ -58,7 +58,7 @@ exports.getConfiguration = async (req, res, next) => {
                     message: 'Success'
                 },
                 body: {
-                    countryCode: configuration,
+                    countryCodes: configuration,
                 },
             });
         }

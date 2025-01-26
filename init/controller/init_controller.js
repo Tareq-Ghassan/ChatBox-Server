@@ -1,4 +1,6 @@
 const User = require('../model/serverConnection');
+const Configuration = require('../model/configuration');
+
 
 exports.init = (req, res, next) => {
     const appKey = req.body.appKey
@@ -33,6 +35,36 @@ exports.init = (req, res, next) => {
                 next(error)
             })
 
+    }
+
+}
+
+
+exports.getConfiguration = async (req, res, next) => {
+    try {
+        const configuration = await Configuration.find()
+
+        if (!configuration) {
+            return res.status(200).json({
+                header: {
+                    errorCode: '00001',
+                    message: 'No Data Was Found'
+                }
+            });
+        } else {
+            return res.status(200).json({
+                header: {
+                    errorCode: '00000',
+                    message: 'Success'
+                },
+                body: {
+                    countryCode: configuration,
+                },
+            });
+        }
+    } catch (error) {
+        console.error('Error in Finding data', error);
+        next(error)
     }
 
 }

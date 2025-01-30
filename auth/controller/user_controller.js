@@ -115,135 +115,42 @@ exports.logout = (req, res, next) => {
 
 
 exports.register = async (req, res, next) => {
-    if (req.body.name == null || req.body.name.toString().trim() === '') {
-        return res.status(400).json({
+    try {
+        const { salt, hash } = hashPassword(req.body.password.toString());
+
+        //! Save user to the database
+        const user = await new User({
+            name: req.body.name.toString(),
+            email: req.body.email.toString(),
+            password: hash.toString(),
+            phoneNumber: {
+                code: req.body.countryCode.toString(),
+                number: req.body.phoneNumber.toString()
+            },
+            salt: salt.toString()
+        }).save();
+
+        //! Generate token
+        const token = generateToken(user);
+
+        //! Send response
+        return res.status(201).json({
             header: {
-                errorCode: '400',
-                message: "Bad Request, name can't be empty or null"
+                errorCode: '00000',
+                message: 'Success',
+                jwt: token
+            },
+            body: {
+                name: user.name.toString(),
+                email: user.email.toString(),
+                phoneNumber: user.phoneNumber
             }
         });
 
-    } else if (req.body.email == null || req.body.email.toString().trim() === '') {
-        return res.status(400).json({
-            header: {
-                errorCode: '400',
-                message: "Bad Request, email can't be empty or null"
-            }
-        });
-    } else if (req.body.password == null || req.body.password.toString().trim() === '') {
-        return res.status(400).json({
-            header: {
-                errorCode: '400',
-                message: "Bad Request, Password can't be empty or null"
-            }
-        });
+    } catch (error) {
+        console.error('Error in creating user', error);
+        next(error);
     }
-    else if (req.body.confirmPassword == null || req.body.confirmPassword.toString().trim() === '') {
-        return res.status(400).json({
-            header: {
-                errorCode: '400',
-                message: "Bad Request, Confirm Password can't be empty or null"
-            }
-        });
-    }
-    else if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(req.body.email.toString())) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00001',
-                message: "Invalid Email Format"
-            }
-        });
-    } else if (await User.findOne({ email: req.body.email.toString().toLowerCase() })) {
-        return res.status(409).json({
-            header: {
-                errorCode: '409',
-                message: "Email already exists"
-            }
-        });
-    }
-    else if (req.body.name.toString().split(' ').length < 2 ||
-        req.body.name.toString().split(' ')[0].trim() === '' ||
-        req.body.name.toString().split(' ')[1].trim() === '') {
-        return res.status(400).json({
-            header: {
-                errorCode: '00002',
-                message: "Name must be 2 syllables or more"
-            }
-        });
-    } else if (req.body.password.length < 6) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00003',
-                message: "Password must be at least 6 characters long"
-            }
-        });
-    }
-    else if (!/[!@#$%^&*(),.?":{}|<>~_\-+=/]/.test(req.body.password)) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00004',
-                message: "Password must include at least one special character"
-            }
-        });
-    } else if (!/\d/.test(req.body.password)) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00005',
-                message: "Password must include at least one digit"
-            }
-        });
-    } else if (!/[a-z]/.test(req.body.password)) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00006',
-                message: "Password must include at least one lowercase character"
-            }
-        });
-    } else if (!/[A-Z]/.test(req.body.password)) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00007',
-                message: "Password must include at least one uppercase character"
-            }
-        });
-    } else if (req.body.password.toString() !== req.body.confirmPassword.toString()) {
-        return res.status(400).json({
-            header: {
-                errorCode: '00008',
-                message: "Passwords do not match"
-            }
-        });
-    }
-
-    const { salt, hash } = hashPassword(req.body.password.toString());
-    new User({
-        name: req.body.name.toString(),
-        email: req.body.email.toString(),
-        password: hash.toString(),
-        salt: salt.toString()
-    })
-        .save()
-        .then(user => {
-            // Generate a token for the user
-            const token = generateToken(user);
-
-            return res.status(201).json({
-                header: {
-                    errorCode: '00000',
-                    message: 'Success',
-                    jwt: token
-                },
-                body: {
-                    name: user.name.toString(),
-                    email: user.email.toString()
-                }
-            })
-        })
-        .catch(error => {
-            console.error('Error in creating user', error);
-            next(error)
-        })
-
 }
 
 

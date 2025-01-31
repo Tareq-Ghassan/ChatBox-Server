@@ -14,7 +14,7 @@ exports.login = async (req, res, next) => {
             return res.status(404).json({
                 header: {
                     errorCode: '404',
-                    message: "User not found"
+                    message: "Invalid credentials"
                 }
             });
         }
@@ -28,7 +28,8 @@ exports.login = async (req, res, next) => {
                 },
                 body: {
                     name: user.name.toString(),
-                    email: user.email.toString()
+                    email: user.email.toString(),
+                    phoneNumber: user.phoneNumber,
                 }
             })
         } else {

@@ -20,7 +20,7 @@ exports.validateRegister = async (req, res, next) => {
     next();
 }
 
-_checkIfNotEmptyOrNull = (req, res) => {
+function _checkIfNotEmptyOrNull(req, res) {
     if (req.body.name == null || req.body.name.toString().trim() === '') {
         return res.status(400).json({
             header: {
@@ -69,7 +69,7 @@ _checkIfNotEmptyOrNull = (req, res) => {
     }
 }
 
-_checkIfEmailIsValidAndNotExist = async (req, res) => {
+async function _checkIfEmailIsValidAndNotExist(req, res) {
     if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(req.body.email.toString())) {
         return res.status(400).json({
             header: {
@@ -87,7 +87,7 @@ _checkIfEmailIsValidAndNotExist = async (req, res) => {
     }
 }
 
-_checkIfNameIs2Syllables = (req, res) => {
+function _checkIfNameIs2Syllables(req, res) {
     if (req.body.name.toString().split(' ').length < 2 ||
         req.body.name.toString().split(' ')[0].trim() === '' ||
         req.body.name.toString().split(' ')[1].trim() === '') {
@@ -101,7 +101,7 @@ _checkIfNameIs2Syllables = (req, res) => {
 }
 
 
-_checkIfPasswordIsValid = (req, res) => {
+function _checkIfPasswordIsValid(req, res) {
     if (req.body.password.length < 6) {
         return res.status(400).json({
             header: {
@@ -149,7 +149,7 @@ _checkIfPasswordIsValid = (req, res) => {
 }
 
 
-_checkIfPhoneNumberIsValid = async (req, res) => {
+async function _checkIfPhoneNumberIsValid(req, res) {
     //! Ensures the country code starts with `+` followed by 1-4 digits
     if (!/^\+\d{1,4}$/.test(req.body.countryCode.trim())) {
         return res.status(400).json({
@@ -162,11 +162,16 @@ _checkIfPhoneNumberIsValid = async (req, res) => {
             header: { errorCode: '00010', message: "Invalid phone number format. Must be 4-15 digits." }
         });
     }
+    //! Remove the leading '0'
+    if (req.body.phoneNumber.startsWith('0')) {
+        req.body.phoneNumber = req.body.phoneNumber.slice(1);
+    }
     //! Ensures the phone number doesn't exist 
-    else if (await User.findOne({ "phoneNumber.code": req.body.countryCode, "phoneNumber.number": req.body.phoneNumber })) {
+    if (await User.findOne({ "phoneNumber.code": req.body.countryCode, "phoneNumber.number": req.body.phoneNumber })) {
         return res.status(409).json({
             header: { errorCode: '409', message: "Phone number already exists" }
         });
     }
+
 
 }

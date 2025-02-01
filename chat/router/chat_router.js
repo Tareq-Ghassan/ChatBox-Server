@@ -7,69 +7,43 @@ const messageController = require('../controller/message_controller')
 const authenticateToken = require('../../middleware/is_authenticated');
 
 const chatValidation = require('../validation/chat_validation')
-/**
- * @swagger
- * tags:
- *  name: Chats
- *  description: Chat Management API
-*/
 
 /**
  * @swagger
- * /chat/chats:
- *   get:
- *     summary: Fetch all user chats (paginated)
- *     description: Retrieves a paginated list of the user's chats.
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+/**
+ * @swagger
+ * /chats:
+ *   post:
+ *     summary: Get all chats
+ *     description: Retrieves a paginated list of chats the user is a participant of.
  *     tags: [Chats]
  *     security:
  *       - BearerAuth: []
  *     parameters:
- *       - in: query
- *         name: page
+ *       - name: index
+ *         in: query
+ *         required: true
  *         schema:
  *           type: integer
- *         description: Page number (default = 1)
- *       - in: query
- *         name: limit
+ *       - name: perPage
+ *         in: query
+ *         required: true
  *         schema:
  *           type: integer
- *         description: Number of chats per page (default = 20)
  *     responses:
  *       200:
- *         description: Successfully fetched chats.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 page:
- *                   type: integer
- *                 limit:
- *                   type: integer
- *                 totalChats:
- *                   type: integer
- *                 totalPages:
- *                   type: integer
- *                 chats:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                         description: Chat ID
- *                       participants:
- *                         type: array
- *                         items:
- *                           type: string
- *                           description: User IDs
- *                       lastMessage:
- *                         type: string
- *                         description: Last message ID
- *       401:
- *         description: Unauthorized - User not authenticated
+ *         description: Successful response
+ *       400:
+ *         description: Bad Request
  */
-router.get('/chats',
+router.post('/chats',
     authenticateToken,
     chatValidation.checkIfIndexAndPerPageExist,
     chatController.getAllChats,
@@ -77,8 +51,8 @@ router.get('/chats',
 
 /**
  * @swagger
- * /chat/chat:
- *   get:
+ * /chat:
+ *   post:
  *     summary: Fetch a specific chat
  *     description: Retrieves details of a chat by chat ID.
  *     tags: [Chats]
@@ -104,7 +78,7 @@ router.get('/chats',
  *       404:
  *         description: Chat not found or user not a participant
  */
-router.get('/chat',
+router.post('/chat',
     authenticateToken,
     chatValidation.checkIfChatIdExist,
     chatController.getChat,
@@ -112,7 +86,7 @@ router.get('/chat',
 
 /**
  * @swagger
- * /chat/archive:
+ * /archive:
  *   put:
  *     summary: Archive a chat
  *     description: Marks a chat as archived for the user.
@@ -141,7 +115,7 @@ router.put('/archive',
 
 /**
  * @swagger
- * /chat/unarchive:
+ * /unarchive:
  *   put:
  *     summary: Unarchive a chat
  *     description: Removes a chat from archived list for the user.
@@ -176,7 +150,7 @@ router.put('/unarchive',
 
 /**
  * @swagger
- * /chat/mute:
+ * /mute:
  *   put:
  *     summary: Mute a chat
  *     description: Mutes notifications for a chat.
@@ -211,7 +185,7 @@ router.put('/mute',
 
 /**
  * @swagger
- * /chat/unmute:
+ * /unmute:
  *   put:
  *     summary: Unmute a chat
  *     description: Un mutes notifications for a chat.
@@ -246,7 +220,7 @@ router.put('/unmute',
 
 /**
  * @swagger
- * /chat/chat:
+ * /chat:
  *   delete:
  *     summary: Delete a chat
  *     description: Marks a chat as deleted for the user. If all participants delete it, the chat is permanently removed.
@@ -282,7 +256,7 @@ router.delete('/chat',
 
 /**
  * @swagger
- * /chat/messages:
+ * /messages:
  *   get:
  *     summary: Fetch messages of a chat (paginated)
  *     description: Retrieves paginated messages for a chat.
@@ -299,10 +273,10 @@ router.delete('/chat',
  *               chatId:
  *                 type: string
  *                 description: ID of the chat to fetch messages from.
- *               page:
+ *               index:
  *                 type: integer
  *                 description: Page number (default = 1)
- *               limit:
+ *               perPage:
  *                 type: integer
  *                 description: Number of messages per page (default = 20)
  *     responses:
@@ -315,7 +289,7 @@ router.delete('/chat',
  *       404:
  *         description: Chat not found
  */
-router.get('/messages',
+router.post('/messages',
     authenticateToken,
     chatValidation.checkIfChatIdExist,
     chatValidation.checkIfChatIdCorrect,
@@ -325,7 +299,7 @@ router.get('/messages',
 
 /**
  * @swagger
- * /chat/sendMessage:
+ * /sendMessage:
  *   post:
  *     summary: Send a message
  *     description: Sends a new message in a chat.
@@ -381,7 +355,7 @@ router.post('/sendMessage',
 
 /**
  * @swagger
- * /chat/editMessage:
+ * /editMessage:
  *   put:
  *     summary: Edit a message
  *     description: Allows the sender to edit a message.
@@ -423,7 +397,7 @@ router.put('/editMessage',
 
 /**
  * @swagger
- * /chat/message:
+ * /message:
  *   delete:
  *     summary: Delete a message
  *     description: Allows the sender to delete a message (soft delete).
@@ -452,7 +426,7 @@ router.put('/editMessage',
  *       404:
  *         description: Message not found.
  */
-router.delete('/message',
+router.post('/message',
     authenticateToken,
     chatValidation.checkIfChatIdExist,
     chatValidation.checkIfChatIdCorrect,
@@ -463,7 +437,7 @@ router.delete('/message',
 
 /**
  * @swagger
- * /chat/seen:
+ * /seen:
  *   put:
  *     summary: Mark message as seen
  *     description: Marks a message as seen by the user.

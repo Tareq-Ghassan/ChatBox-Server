@@ -17,18 +17,100 @@
   ],
   "components": {
     "securitySchemes": {
-      "BearerAuth": {
+      "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }
+    },
+    "schemas": {
+      "ServerConnection": {
+        "type": "object",
+        "properties": {
+          "appKey": {
+            "type": "string",
+            "description": "Unique application key"
+          },
+          "appSecret": {
+            "type": "string",
+            "description": "Secret key for authentication"
+          }
+        },
+        "required": [
+          "appKey",
+          "appSecret"
+        ]
+      },
+      "Configuration": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Configuration name"
+          },
+          "code": {
+            "type": "string",
+            "description": "Configuration code"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique user ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Full name of the user"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the user"
+          },
+          "phoneNumber": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Country code"
+              },
+              "number": {
+                "type": "string",
+                "description": "Phone number"
+              }
+            }
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Hashed password of the user"
+          },
+          "salt": {
+            "type": "string",
+            "format": "password",
+            "description": "Salt used for password hashing"
+          },
+          "profileImage": {
+            "type": "string",
+            "description": "URL to the user's profile image"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "phoneNumber"
+        ]
+      }
     }
   },
-  "security": [
-    {
-      "BearerAuth": []
-    }
-  ],
   "paths": {},
   "tags": []
 }

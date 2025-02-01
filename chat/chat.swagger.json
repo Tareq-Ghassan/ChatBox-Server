@@ -17,23 +17,110 @@
   ],
   "components": {
     "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }
+    },
+    "schemas": {
+      "ServerConnection": {
+        "type": "object",
+        "properties": {
+          "appKey": {
+            "type": "string",
+            "description": "Unique application key"
+          },
+          "appSecret": {
+            "type": "string",
+            "description": "Secret key for authentication"
+          }
+        },
+        "required": [
+          "appKey",
+          "appSecret"
+        ]
+      },
+      "Configuration": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Configuration name"
+          },
+          "code": {
+            "type": "string",
+            "description": "Configuration code"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique user ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Full name of the user"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the user"
+          },
+          "phoneNumber": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Country code"
+              },
+              "number": {
+                "type": "string",
+                "description": "Phone number"
+              }
+            }
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Hashed password of the user"
+          },
+          "salt": {
+            "type": "string",
+            "format": "password",
+            "description": "Salt used for password hashing"
+          },
+          "profileImage": {
+            "type": "string",
+            "description": "URL to the user's profile image"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "phoneNumber"
+        ]
+      }
     }
   },
-  "security": [
-    {
-      "BearerAuth": []
-    }
-  ],
   "paths": {
-    "/chat/chats": {
-      "get": {
-        "summary": "Fetch all user chats (paginated)",
-        "description": "Retrieves a paginated list of the user's chats.",
+    "/chats": {
+      "post": {
+        "summary": "Get all chats",
+        "description": "Retrieves a paginated list of chats the user is a participant of.",
         "tags": [
           "Chats"
         ],
@@ -44,78 +131,34 @@
         ],
         "parameters": [
           {
+            "name": "index",
             "in": "query",
-            "name": "page",
+            "required": true,
             "schema": {
               "type": "integer"
-            },
-            "description": "Page number (default = 1)"
+            }
           },
           {
+            "name": "perPage",
             "in": "query",
-            "name": "limit",
+            "required": true,
             "schema": {
               "type": "integer"
-            },
-            "description": "Number of chats per page (default = 20)"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successfully fetched chats.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "page": {
-                      "type": "integer"
-                    },
-                    "limit": {
-                      "type": "integer"
-                    },
-                    "totalChats": {
-                      "type": "integer"
-                    },
-                    "totalPages": {
-                      "type": "integer"
-                    },
-                    "chats": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "_id": {
-                            "type": "string",
-                            "description": "Chat ID"
-                          },
-                          "participants": {
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "description": "User IDs"
-                            }
-                          },
-                          "lastMessage": {
-                            "type": "string",
-                            "description": "Last message ID"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "description": "Successful response"
           },
-          "401": {
-            "description": "Unauthorized - User not authenticated"
+          "400": {
+            "description": "Bad Request"
           }
         }
       }
     },
-    "/chat/chat": {
-      "get": {
+    "/chat": {
+      "post": {
         "summary": "Fetch a specific chat",
         "description": "Retrieves details of a chat by chat ID.",
         "tags": [
@@ -200,7 +243,7 @@
         }
       }
     },
-    "/chat/archive": {
+    "/archive": {
       "put": {
         "summary": "Archive a chat",
         "description": "Marks a chat as archived for the user.",
@@ -235,7 +278,7 @@
         }
       }
     },
-    "/chat/unarchive": {
+    "/unarchive": {
       "put": {
         "summary": "Unarchive a chat",
         "description": "Removes a chat from archived list for the user.",
@@ -279,7 +322,7 @@
         }
       }
     },
-    "/chat/mute": {
+    "/mute": {
       "put": {
         "summary": "Mute a chat",
         "description": "Mutes notifications for a chat.",
@@ -323,7 +366,7 @@
         }
       }
     },
-    "/chat/unmute": {
+    "/unmute": {
       "put": {
         "summary": "Unmute a chat",
         "description": "Un mutes notifications for a chat.",
@@ -367,7 +410,7 @@
         }
       }
     },
-    "/chat/messages": {
+    "/messages": {
       "get": {
         "summary": "Fetch messages of a chat (paginated)",
         "description": "Retrieves paginated messages for a chat.",
@@ -390,11 +433,11 @@
                     "type": "string",
                     "description": "ID of the chat to fetch messages from."
                   },
-                  "page": {
+                  "index": {
                     "type": "integer",
                     "description": "Page number (default = 1)"
                   },
-                  "limit": {
+                  "perPage": {
                     "type": "integer",
                     "description": "Number of messages per page (default = 20)"
                   }
@@ -419,7 +462,7 @@
         }
       }
     },
-    "/chat/sendMessage": {
+    "/sendMessage": {
       "post": {
         "summary": "Send a message",
         "description": "Sends a new message in a chat.",
@@ -497,7 +540,7 @@
         }
       }
     },
-    "/chat/editMessage": {
+    "/editMessage": {
       "put": {
         "summary": "Edit a message",
         "description": "Allows the sender to edit a message.",
@@ -548,7 +591,7 @@
         }
       }
     },
-    "/chat/message": {
+    "/message": {
       "delete": {
         "summary": "Delete a message",
         "description": "Allows the sender to delete a message (soft delete).",
@@ -595,7 +638,7 @@
         }
       }
     },
-    "/chat/seen": {
+    "/seen": {
       "put": {
         "summary": "Mark message as seen",
         "description": "Marks a message as seen by the user.",
@@ -640,10 +683,5 @@
       }
     }
   },
-  "tags": [
-    {
-      "name": "Chats",
-      "description": "Chat Management API"
-    }
-  ]
+  "tags": []
 }

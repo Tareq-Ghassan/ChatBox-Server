@@ -43,9 +43,9 @@ const chatValidation = require('../validation/chat_validation')
  *       400:
  *         description: Bad Request
  */
-router.post('/chats',
+router.get('/chats',
     authenticateToken,
-    chatValidation.checkIfIndexAndPerPageExist,
+    chatValidation.checkIfIndexAndPerPageExistForChat,
     chatController.getAllChats,
 );
 
@@ -293,7 +293,7 @@ router.post('/messages',
     authenticateToken,
     chatValidation.checkIfChatIdExist,
     chatValidation.checkIfChatIdCorrect,
-    chatValidation.checkIfIndexAndPerPageExist,
+    chatValidation.checkIfIndexAndPerPageExistForMessages,
     messageController.getMessages,
 );
 
@@ -346,8 +346,6 @@ router.post('/messages',
  */
 router.post('/sendMessage',
     authenticateToken,
-    chatValidation.checkIfChatIdExist,
-    chatValidation.checkIfChatIdCorrect,
     chatValidation.sendMessageRequest,
     messageController.sendMessage,
 );
@@ -426,7 +424,7 @@ router.put('/editMessage',
  *       404:
  *         description: Message not found.
  */
-router.post('/message',
+router.delete('/message',
     authenticateToken,
     chatValidation.checkIfChatIdExist,
     chatValidation.checkIfChatIdCorrect,

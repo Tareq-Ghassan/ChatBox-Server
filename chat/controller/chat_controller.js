@@ -2,7 +2,7 @@ const Chat = require('../model/chat');
 
 exports.getAllChats = async (req, res, next) => {
     try {
-        const { perPage, index } = req.body;
+        const { perPage, index } = req.query;
         const chats = await Chat.find({ participants: req.user.id })
             .populate("lastMessage")
             .sort({ updatedAt: -1 })
@@ -16,14 +16,11 @@ exports.getAllChats = async (req, res, next) => {
                 errorCode: '00000',
                 message: 'Success',
             },
-
-            body: {
-                chats: chats,
-                currentPage: Number(index),
-                perPage: Number(perPage),
-                totalChats: totalChats,
-                totalPages: Math.ceil(totalChats / limit),
-            }
+            chats: chats,
+            currentPage: Number(index),
+            perPage: Number(perPage),
+            totalChats: totalChats,
+            totalPages: Math.ceil(totalChats / perPage),
         });
 
     } catch (error) {
@@ -99,7 +96,7 @@ exports.unarchive = async (req, res, next) => {
             });
         }
 
-        chat.archivedBy = chat.archivedBy.filter(id => id.toString() !== userId);
+        chat.archivedBy = chat.archivedBy.filter(id => id.toString() !== req.user.id);
         await chat.save();
 
         return res.status(200).json({
@@ -153,7 +150,7 @@ exports.unMute = async (req, res, next) => {
             });
         }
 
-        chat.mutedBy = chat.mutedBy.filter(id => id.toString() !== userId);
+        chat.mutedBy = chat.mutedBy.filter(id => id.toString() !== req.user.id);
         await chat.save();
 
         return res.status(200).json({

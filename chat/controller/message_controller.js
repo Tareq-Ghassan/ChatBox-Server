@@ -34,29 +34,61 @@ exports.getMessages = async (req, res, next) => {
 
 exports.sendMessage = async (req, res, next) => {
     try {
-        const chat = await Chat.findOne({ _id: chatId, participants: senderId });
-        const { chatId, messageType, content, mediaUrl, location } = req.body;
+        const senderId = req.user.id;
+        const { recipientId, chatId, messageType, content, mediaUrl, location } = req.body;
+        let chat;
+
+        if (chatId) {
+            chat = await Chat.findOne({ _id: chatId, participants: senderId });
+            if (!chat) {
+                return res.status(404).json({
+                    header: { errorCode: '404', message: "Chat not found or unauthorized" }
+                });
+            }
+        } else {
+            chat = await Chat.findOne({
+                participants: { $all: [senderId, recipientId] }
+            });
+
+            if (!chat) {
+                chat = new Chat({
+                    participants: [senderId, recipientId],
+                    lastMessage: null,
+                    isGroup: false
+                });
+
+                await chat.save();
+                console.log("✅ New chat created:", chat._id);
+            }
+        }
+
         const message = new Message({
-            chatId,
-            sender: req.user.id,
+            chatId: chat._id,
+            sender: senderId,
             messageType,
             content: content || null,
             mediaUrl: mediaUrl || null,
-            location: location || null
+            location: location || null,
+            seenBy: [senderId],
         });
 
-        chat.lastMessage = message._id;
         await message.save();
 
+
+        chat.lastMessage = message._id;
+
+        await chat.save();
+
         const io = require("../../socket").getIO();
-        io.to(chatId).emit("message:new", message);
+        io.to(chat._id.toString()).emit("message:new", message);
 
         return res.status(201).json({
             header: {
                 errorCode: '00000',
                 message: 'Success',
             },
-            body: message
+            chatId: chat._id, 
+            message,
         });
 
     } catch (error) {
@@ -205,7 +237,7 @@ exports.markMessageAsSeen = async (req, res, next) => {
                 errorCode: '00000',
                 message: 'Success',
             },
-            body: message.seenBy
+            seenBy: message.seenBy
         });
 
     } catch (error) {

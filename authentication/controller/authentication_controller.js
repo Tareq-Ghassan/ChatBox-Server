@@ -3,7 +3,7 @@ require('dotenv').config();
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
-const User = require('../models/user');
+const User = require('../../user/models/user');
 const BlackList = require("../../helper/blacklist")
 
 

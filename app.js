@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const swaggerSetup = require('./swagger_config')
 
 const initRoutes = require('./init/router/init_router')
-const userRoutes = require('./auth/router/user_router')
+const authenticationRoutes = require('./authentication/router/authentication_router')
 const storyRoutes = require('./stories/router/story_router')
 const chatRoutes = require('./chat/router/chat_router')
 
@@ -14,7 +14,7 @@ const errorController = require('./error/controller/error_controller');
 
 app.use(bodyParser.json())
 app.use('/init', initRoutes)
-app.use('/user', userRoutes)
+app.use('/authentication', authenticationRoutes)
 app.use('/story', storyRoutes)
 app.use('/chat', chatRoutes)
 

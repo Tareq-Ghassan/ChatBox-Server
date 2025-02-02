@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../../user/models/user');
 
 exports.validateRegister = async (req, res, next) => {
     //? missing || null request parameter checks

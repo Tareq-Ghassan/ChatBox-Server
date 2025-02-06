@@ -146,7 +146,7 @@ function hashPassword(password) {
 // Generate a JWT for a user
 function generateToken(user) {
     return jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-        expiresIn: '1h', // Token expires in 1 hour
+        expiresIn: '1y', // Token expires in 1 year
     });
 }
 

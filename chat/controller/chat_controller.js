@@ -5,6 +5,7 @@ exports.getAllChats = async (req, res, next) => {
         const { perPage, index } = req.query;
         const chats = await Chat.find({ participants: req.user.id })
             .populate("lastMessage")
+            .populate("participants", "name profileImage")
             .sort({ updatedAt: -1 })
             .skip((index - 1) * perPage)
             .limit(perPage);
@@ -36,7 +37,7 @@ exports.getChat = async (req, res, next) => {
 
         const chat = await Chat.findOne({ _id: req.body.chatId, participants: req.user.id })
             .populate("lastMessage")
-            .populate("participants", "name profileImage");
+            .populate("participants", "name profileImage phoneNumber email");
 
         if (!chat) {
             return res.status(500).json({

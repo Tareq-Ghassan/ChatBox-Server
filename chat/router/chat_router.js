@@ -51,41 +51,6 @@ router.get('/chats',
 
 /**
  * @swagger
- * /chat:
- *   post:
- *     summary: Fetch a specific chat
- *     description: Retrieves details of a chat by chat ID.
- *     tags: [Chats]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               chatId:
- *                 type: string
- *                 description: ID of the chat to fetch.
- *     responses:
- *       200:
- *         description: Successfully retrieved chat.
- *       400:
- *         description: Bad request (missing or invalid chat ID)
- *       401:
- *         description: Unauthorized - User not authenticated
- *       404:
- *         description: Chat not found or user not a participant
- */
-router.post('/chat',
-    authenticateToken,
-    chatValidation.checkIfChatIdExist,
-    chatController.getChat,
-);
-
-/**
- * @swagger
  * /archive:
  *   put:
  *     summary: Archive a chat

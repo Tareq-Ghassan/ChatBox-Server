@@ -1,4 +1,6 @@
 const Chat = require('../model/chat');
+const Message = require('../model/message');
+
 
 exports.getAllChats = async (req, res, next) => {
     try {
@@ -12,12 +14,29 @@ exports.getAllChats = async (req, res, next) => {
 
         const totalChats = await Chat.countDocuments({ participants: req.user.id });
 
+        const modifiedChats = await Promise.all(chats.map(async (chat) => {
+            const unreadMessagesCount = await Message.countDocuments({
+                chatId: chat._id,
+                isRead: false,
+                receiver: req.user.id,
+            });
+            const { archivedBy, mutedBy, deletedBy, ...chatData } = chat._doc;
+            return {
+                ...chatData,
+                participants: chat.participants.filter(p => p._id.toString() !== req.user.id),
+                unreadMessagesCount,
+                isArchived: chat.archivedBy.includes(req.user.id),
+                isMuted: chat.mutedBy.includes(req.user.id),
+                isDeleted: chat.deletedBy.includes(req.user.id),
+            };
+        }));
+
         return res.status(200).json({
             header: {
                 errorCode: '00000',
                 message: 'Success',
             },
-            chats: chats,
+            chats: modifiedChats,
             currentPage: Number(index),
             perPage: Number(perPage),
             totalChats: totalChats,
@@ -26,35 +45,6 @@ exports.getAllChats = async (req, res, next) => {
 
     } catch (error) {
         console.error('Error fetching chats', error);
-        next(error);
-    }
-
-}
-
-
-exports.getChat = async (req, res, next) => {
-    try {
-
-        const chat = await Chat.findOne({ _id: req.body.chatId, participants: req.user.id })
-            .populate("lastMessage")
-            .populate("participants", "name profileImage phoneNumber email");
-
-        if (!chat) {
-            return res.status(500).json({
-                header: { errorCode: '404', message: "Chat not found or unauthorized" }
-            });
-        }
-
-        return res.status(200).json({
-            header: {
-                errorCode: '00000',
-                message: 'Success',
-            },
-            body: chat
-        });
-
-    } catch (error) {
-        console.error('Error fetching a chat', error);
         next(error);
     }
 
